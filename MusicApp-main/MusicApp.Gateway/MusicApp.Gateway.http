@@ -1,0 +1,6 @@
+@MusicApp.Gateway_HostAddress = http://localhost:5129
+
+GET {{MusicApp.Gateway_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

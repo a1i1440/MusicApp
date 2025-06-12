@@ -1,0 +1,70 @@
+version: "3.9"
+services:
+  favourite:
+    build: ./MusicApp.Favourites.API
+    container_name: favourite
+    ports:
+      - "5001:8080"
+    environment:
+      REDIS_CONNECTION_STRING: "redis:6379"
+    networks: [ musicnet ]
+  
+  music:
+    build: ./MusicApp.Music.API
+    container_name: music
+    environment:
+      SQLSERVER_CONNECTION_STRING: "Server=sqlserver;Database=MusicApp;User Id=sa;Password=MsSql123!;TrustServerCertificate=true;"
+    ports:
+      - "5002:8080"
+    networks: [ musicnet ]
+  
+  identity:
+    build: ./MusicApp.Identity.API
+    container_name: identity
+    environment:
+      SQLSERVER_CONNECTION_STRING: "Server=sqlserver;Database=MusicApp;User Id=sa;Password=MsSql123!;TrustServerCertificate=true;"
+    ports:
+      - "5003:8080"
+    networks: [ musicnet ]
+
+  gateway:
+    build: ./MusicApp.Gateway
+    container_name: gateway
+    ports:
+      - "8000:8000"
+    networks: [ musicnet ]
+  frontend:
+    build: ./MusicApp.UI
+    container_name: frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - gateway
+    networks: [ musicnet ]
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      SA_PASSWORD: "MsSql123!"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+    restart: always
+    networks: [ musicnet ]
+  redis:
+    image: redis:7.2
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks: [ musicnet ]
+networks:
+  musicnet:
+    driver: bridge
+volumes:
+  sql_data:
+  redis-data:
